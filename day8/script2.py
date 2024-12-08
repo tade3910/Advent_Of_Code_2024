@@ -38,31 +38,40 @@ def getDifs(row:int,col:int,locationRow:int,locationCol:int):
     colDif = locationCol - col
     return rowDif,colDif        
 
-def getAntiNodeLocations(coordinates:set[str],lines:list[list[str]],antiNodes:set):
+def getMatch(row:int,rowDif:int,col:int,colDif:int):
+    matchingRow = row + rowDif
+    matchingCol = col + colDif
+    return matchingRow,matchingCol
+
+def getAntiNodeLocations(coordinates:set[str],lines:list[list[str]],antiNodes:set,part2 = True):
     for coordinate in coordinates:
         for otherCoordinate in coordinates:
             if otherCoordinate != coordinate:
                 row,col = strToRowCol(coordinate)
                 otherRow,otherCol = strToRowCol(otherCoordinate)
                 rowDif,colDif = getDifs(row,col,otherRow,otherCol)
+                matchingRow,matchingCol = getMatch(otherRow,rowDif,otherCol,colDif)
+                if isInWorld(matchingRow,matchingCol,lines): antiNodes.add(getRowColStr(matchingRow,matchingCol))
+                if not part2: continue
                 antiNodes.add(coordinate)
                 antiNodes.add(otherCoordinate)
-                matchingRow = otherRow + rowDif
-                matchingCol = otherCol + colDif
+                matchingRow,matchingCol = getMatch(matchingRow,rowDif,matchingCol,colDif)
                 while isInWorld(matchingRow,matchingCol,lines):
                     antiNodes.add(getRowColStr(matchingRow,matchingCol))
-                    matchingRow = matchingRow + rowDif
-                    matchingCol = matchingCol + colDif
+                    matchingRow,matchingCol = getMatch(matchingRow,rowDif,matchingCol,colDif)
 
+
+# Optimized solution for part1 and part2 solution
 def countLocations(fileName:str):
     antenaLocations,lines = getAntenaLocations(fileName)
     antiNodes = set()
+    part1Nodes = set()
     for antenaCords in antenaLocations.values():
         getAntiNodeLocations(antenaCords,lines,antiNodes)
-    return len(antiNodes)
+        getAntiNodeLocations(antenaCords,lines,part1Nodes,False)
+    return len(antiNodes),len(part1Nodes)
 
 def main():
-    # print(countLocations('test4.txt'))
     print(countLocations('input.txt'))
 
 if __name__ == "__main__":
