@@ -16,9 +16,6 @@ def blink(max_level: int, input: str) -> int:
             for new_stone in transformed:
                 nextQueu.append(new_stone)
         queue = nextQueu
-        
-    
-
     return len(queue)
 
 def optimized_blinks(max_level: int, input: str) -> int:

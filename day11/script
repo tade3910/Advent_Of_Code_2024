@@ -120,5 +120,44 @@ sub optimizedBlink {
     return (\@updatedStones, \@updatedLevels, $done);
 }
 
+sub trulyOptimizedBlinks {
+    my ($maxLevel, $input) = @_;
+    my @stones = split / /, $input;
+    my %queu;
+    my %cache;
+
+    foreach my $stone(@stones) {
+        $queu{$stone}++;
+    }
+
+    for (0..$maxLevel) {
+        my %updatedQueue;
+
+        while (my ($stone, $count) = each %queu) {
+            my @next;
+            if (exists $cache{$stone}) {
+                @next = @{$cache{$stone}};
+            } else {
+                @next = blink($stone); 
+                $cache{$stone} = \@next;
+            }
+
+            foreach my $val(@next) {
+                $updatedQueue{$val} += $count;
+            }
+        }
+        %queu = %updatedQueue;
+    }
+
+    my $sum = 0;
+    foreach my $count (values %queu) {
+        $sum += $count;
+    }
+
+    return $sum;
+}
+
 print optimizedBlinks(25,"125 17")."\n";
-print optimizedBlinks(75,"2 77706 5847 9258441 0 741 883933 12")."\n";
+print trulyOptimizedBlinks(24,"125 17")."\n";
+print trulyOptimizedBlinks(24,"2 77706 5847 9258441 0 741 883933 12")."\n";
+print trulyOptimizedBlinks(74,"2 77706 5847 9258441 0 741 883933 12")."\n";

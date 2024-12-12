@@ -1,0 +1,62 @@
+#!/usr/bin/env perl
+
+sub blink {
+    my @updatedStones = ();
+    foreach my $stone (@_){
+        my $stoneLength = length $stone;
+        if ($stone == 0) {
+            push @updatedStones,1;
+        } elsif ($stoneLength % 2 == 0) {
+            my $halfPoint = $stoneLength / 2;
+            push @updatedStones, substr $stone, 0, $halfPoint;
+            my $secondHalf = substr $stone,$halfPoint,$halfPoint;
+            $secondHalf =~ s/^0+(?=[0-9])//;
+            push @updatedStones, $secondHalf;
+        } else {
+            push @updatedStones, $stone * 2024;
+        }
+
+    }
+    return @updatedStones;
+}
+
+sub trulyOptimizedBlinks {
+    my ($maxLevel, $input) = @_;
+    my @stones = split / /, $input;
+    my %queu;
+    my %cache;
+
+    foreach my $stone(@stones) {
+        $queu{$stone}++;
+    }
+
+    for (0..$maxLevel) {
+        my %updatedQueue;
+
+        while (my ($stone, $count) = each %queu) {
+            my @next;
+            if (exists $cache{$stone}) {
+                @next = @{$cache{$stone}};
+            } else {
+                @next = blink($stone); 
+                $cache{$stone} = \@next;
+            }
+
+            foreach my $val(@next) {
+                $updatedQueue{$val} += $count;
+            }
+        }
+        %queu = %updatedQueue;
+    }
+
+    my $sum = 0;
+    foreach my $count (values %queu) {
+        $sum += $count;
+    }
+
+    return $sum;
+}
+
+print trulyOptimizedBlinks(24,"125 17")."\n";
+print trulyOptimizedBlinks(24,"2 77706 5847 9258441 0 741 883933 12")."\n";
+print trulyOptimizedBlinks(74,"2 77706 5847 9258441 0 741 883933 12")."\n";
