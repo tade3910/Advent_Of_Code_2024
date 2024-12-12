@@ -1,0 +1,142 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+
+sub print_hash {
+    my ($hashRef) = @_;
+    
+    while (my ($key, $value) = each %$hashRef) {
+        print "Key: $key => ";
+        
+        if (ref $value eq 'ARRAY') {
+            print "Array: " . join(", ", @$value) . "\n";
+        } else {
+            print "Value: $value\n";
+        }
+    }
+}
+
+sub inWorld {
+    (my $col,my$row,my$cols,my$rows) = @_;
+    if($col < 0 or $col >= $cols or $row < 0 or $row >= $rows) {
+        return 0;
+    }
+    return 1;
+}
+sub getNeighbors {
+    my ($row, $col, $cols, $rows) = @_;
+    return (
+        [$row, $col - 1],  # Left
+        [$row, $col + 1],  # Right
+        [$row - 1, $col],  # Up
+        [$row + 1, $col],  # Down
+    );
+}
+
+sub explore {
+    my ($startRow, $startCol, $cols, $rows, $type, $worldRef, $exploredRef) = @_;
+    my @stack = ([$startRow, $startCol]);
+    my ($area, $perimeter) = (0, 0);
+
+    while (@stack) {
+        my ($row, $col) = @{pop @stack};
+        next if !inWorld($col, $row, $cols, $rows);
+
+        my $hashEntry = "$row,$col";
+        next if exists $exploredRef->{$hashEntry};
+        next if $worldRef->[$row][$col] ne $type;
+
+        $exploredRef->{$hashEntry} = 1;
+        $area++;
+
+        foreach my $neighbor (getNeighbors($row, $col, $cols, $rows)) {
+            my ($nRow, $nCol) = @$neighbor;
+            if (!inWorld($nCol, $nRow, $cols, $rows) || $worldRef->[$nRow][$nCol] ne $type) {
+                $perimeter++;
+            } else {
+                push @stack, $neighbor unless exists $exploredRef->{"$nRow,$nCol"};
+            }
+        }
+    }
+
+    return ($area, $perimeter);
+}
+
+sub getPerimeter { #Some logic error
+    my($rows,$cols,$regionRef) = @_;
+    my $area = 0;
+    for my $row(0..$rows - 1) {
+        my $count = 0;
+        for my $col(0..$cols - 1) {
+            my $hashEntry = $row . $col;
+            if(exists $regionRef->{$hashEntry}) {
+                $count += 1;
+                my $leftCol = $col - 1;
+                my $topRow = $row -1;
+                my $leftEntry = $row . $leftCol;
+                my $topEntry = $topRow . $col;
+                my $addition = 4;
+                if (exists $regionRef->{$leftEntry}) {
+                    $addition -= 2;
+                }
+                if (exists $regionRef->{$topEntry}) {
+                    $addition -= 2;
+                }
+                $area += $addition;
+            }
+        }
+        if($count == scalar %{$regionRef}) {
+            last;
+        }
+    }
+    return $area;
+}
+
+sub getPrice {
+    (my $worldRef) = @_;
+    my $price = 0;
+    my %explored;
+    my $rows = scalar @$worldRef;
+    for my $row(0 .. $rows - 1) {
+        my $cols = scalar @{$worldRef->[$row]};
+        for my $col(0 .. $cols - 1) {
+            my $hashEntry = $row . $col;
+            if (!exists $explored{$hashEntry}) {
+                my %region;
+                my $type = $worldRef->[$row][$col];
+                my ($perimiter,$area) =explore($row,$col,$cols,$rows,$type,$worldRef,\%explored,\%region);
+                # my $perimiter = scalar %region;
+                # my $area = getPerimeter($rows,$cols,\%region);
+                my $curPrice = $perimiter * $area;
+                $price += $curPrice;
+                print "explored $hashEntry of type $type with perimeter $perimiter area $area and price $curPrice so price is $price\n";
+            }
+        }
+    }
+    return $price;
+}
+
+sub getWorld {
+    my $filename = shift;
+    open(my $fh, '<:encoding(UTF-8)', $filename)
+    or die "Could not open file '$filename' $!";
+    my @world;
+    while (my $row = <$fh>) {
+        chomp $row;
+        my @curRow = split //,$row;
+        push @world,\@curRow;
+    }
+    return @world;
+}
+getWorld("test.txt");
+my @test = getWorld("test.txt");
+print(getPrice(\@test)."\n");
+my @secondTest = getWorld("test2.txt");
+print(getPrice(\@secondTest)."\n");
+my @thirdTest = getWorld("test3.txt");
+print(getPrice(\@thirdTest)."\n");
+my @input = getWorld("input.txt");
+print(getPrice(\@input)."\n");
+
+
