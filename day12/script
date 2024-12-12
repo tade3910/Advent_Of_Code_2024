@@ -170,12 +170,6 @@ sub explore {
     my @stack = ([$startRow, $startCol]);
     my ($area, $perimeter) = (0, 0);
     my %region;
-    my %directions = (
-        "l" => {},
-        "r" => {},
-        "u" => {},
-        "d" => {}
-    );
     
     while (@stack) {
         my ($row, $col) = @{pop @stack};
@@ -194,42 +188,41 @@ sub explore {
             print "direction is $direction\n";
             if (!inWorld($nCol, $nRow, $cols, $rows) || $worldRef->[$nRow][$nCol] ne $type) {
                 $perimeter++;  # Either a world boundary or next to some other region
-                $directions{$direction}{"$nRow,$nCol"} = 1;  # Store neighbor with direction
             } else {
                 push @stack, $neighbor unless exists $exploredRef->{"$nRow,$nCol"};
             }
         }
     }
-    
-    # Count lines based on boundaries
-    my $lines = 0;
-    foreach my $hash (values %directions) {
-        my %seenPerim;
-        foreach my $entry (keys %$hash) {
-            next if exists $seenPerim{$entry};
-            $seenPerim{$entry} = 1;
-            $lines++;
-            my ($row, $col) = split(',', $entry);
-            print "row is $row and col is $col\n";
-            my @nextStack = [($row, $col)];
-            
-            while (@nextStack) {
-                my ($row, $col) = @{shift @nextStack};
-                next if exists $seenPerim{"$row,$col"};
-                
-                foreach my $neighbor (getNeighbors($row, $col, $cols, $rows)) {
-                    my ($nRow, $nCol, $direction) = @$neighbor;
-                    if (inWorld($nCol, $nRow, $cols, $rows)) {
-                        push @nextStack, [$nRow, $nCol];
-                    }
-                }
-            }
-        }
-    }
-
+    my $lines = getLines($rows,$cols,\%region);
     return ($area, $perimeter, $lines);
 }
 
+# sub explore {
+#     (my $col,my$row,my$cols,my$rows,my $type,my $worldRef,my $exploredRef,my $regionRef,my $resultRef) = @_;
+#     #perimeter area lines
+#     if(!inWorld($col,$row,$cols,$rows)) {
+#         $resultRef->[0] = $resultRef->[0] + 1;
+#         return;
+#     }
+#     my $hashEntry = $row . $col;
+#     if(exists $exploredRef->{$hashEntry}) {
+#         return;
+#     }
+#     if($worldRef->[$row][$col] ne $type) {
+#         $resultRef->[0] = $resultRef->[0] + 1;
+#         return;
+#     }
+#     #New entry
+#     $resultRef->[1] = $resultRef->[1] + 1;
+
+#     $exploredRef->{$hashEntry} = 1;
+#     $regionRef->{$hashEntry} = 1;
+#     explore($col - 1,$row,$cols,$rows,$type,$worldRef,$exploredRef,$regionRef); #up
+#     explore($col + 1,$row,$cols,$rows,$type,$worldRef,$exploredRef,$regionRef); #down
+#     explore($col,$row - 1,$cols,$rows,$type,$worldRef,$exploredRef,$regionRef); #left
+#     explore($col,$row + 1,$cols,$rows,$type,$worldRef,$exploredRef,$regionRef); #rigt
+#     return;
+# }
 
 sub getPrice {
     (my $worldRef) = @_;
