@@ -9,26 +9,14 @@ sub blink {
         } elsif ($stoneLength % 2 == 0) {
             my $halfPoint = $stoneLength / 2;
             push @updatedStones, substr $stone, 0, $halfPoint;
-            my $secondHalf = "";
-            my @splitStone = split //,$stone;
-            for my $i ($halfPoint..$stoneLength) {
-                my $char = $splitStone[$i];
-                if($char eq 0 && length $secondHalf == 0){
-                    next;
-                }  
-                $secondHalf = $secondHalf.$char;
-            }
-            if(length $secondHalf == 0) {
-                push @updatedStones, 0;
-            } else {
-                push @updatedStones, $secondHalf;
-            }
+            my $secondHalf = substr $stone,$halfPoint,$halfPoint;
+            $secondHalf =~ s/^0+(?=[0-9])//;
+            push @updatedStones, $secondHalf;
         } else {
             push @updatedStones, $stone * 2024;
         }
 
     }
-    my $updatedString = join ' ', @updatedStones;
     return @updatedStones;
 }
 
@@ -39,9 +27,98 @@ sub blinkXTimes {
     for my $i(0..$x) {
         my @updatedInput = blink(@splitInput);
         @splitInput = @updatedInput;
+        print "iteration ". $i. " ".scalar @splitInput."\n";
     }
     return scalar @splitInput;
 }
 
-print blinkXTimes(24,"125 17")."\n";
-print blinkXTimes(24,"2 77706 5847 9258441 0 741 883933 12")."\n";
+# print blinkXTimes(24,"125 17")."\n";
+# print blinkXTimes(24,"2 77706 5847 9258441 0 741 883933 12")."\n";
+# print blinkXTimes(74,"2 77706 5847 9258441 0 741 883933 12")."\n";
+
+sub print_hash {
+    my ($hashRef) = @_;
+    
+    while (my ($key, $value) = each %$hashRef) {
+        print "Key: $key => ";
+        
+        if (ref $value eq 'ARRAY') {
+            print "Array: " . join(", ", @$value) . "\n";
+        } else {
+            print "Value: $value\n";
+        }
+    }
+}
+
+sub optimizedBlinks {
+    my ($maxLevel, $input) = @_;
+    my %cache;
+    my @levels = ();
+    my @stones = split / /, $input;
+    my $done = 0;
+    while (!$done) {
+        my ($updatedStonesRef, $updatedLevelsRef, $isDone) =
+            optimizedBlink(\%cache, \@levels, \@stones, $maxLevel);
+        @stones = @$updatedStonesRef;
+        @levels = @$updatedLevelsRef;
+        $done = $isDone;
+    }
+    return @stones;
+}
+
+
+
+sub trace {
+    my ($curLevel, $maxLevel, $queuRef, $cacheRef, $levelsRef, $updatedStonesRef) = @_;
+    foreach my $stone (@$queuRef) {
+        if ($curLevel == $maxLevel) {
+            push @$updatedStonesRef, $stone;
+            push @$levelsRef, $curLevel;
+        } elsif (!exists $cacheRef->{$stone}) {
+            my @update = blink($stone);
+            $cacheRef->{$stone} = \@update;
+            push @$updatedStonesRef, @update;
+            foreach my $new_stone (@update) {
+                push @$levelsRef, $curLevel + 1;
+            }
+        } else {
+            my $nextRef = $cacheRef->{$stone};
+            trace($curLevel + 1, $maxLevel, $nextRef, $cacheRef, $levelsRef, $updatedStonesRef);
+        }
+    }
+}
+
+
+
+
+sub optimizedBlink {
+    my ($cacheRef, $levelsRef, $stonesRef, $maxLevel) = @_;
+    my @updatedStones = ();
+    my @updatedLevels = ();
+    for my $i (0 .. scalar @$stonesRef - 1) {
+        my $stone = $stonesRef->[$i];
+        my $level = $levelsRef->[$i] // 0;  # Default level to 0 if undefined
+        if ($level == $maxLevel) {
+            # Skip processing and retain the stone at max level
+            push @updatedStones, $stone;
+            push @updatedLevels, $level;
+        } elsif (exists $cacheRef->{$stone}) {
+            # Process stones in the cache
+            my $nextRef = $cacheRef->{$stone};
+            trace($level + 1, $maxLevel, $nextRef, $cacheRef, \@updatedLevels, \@updatedStones);
+        } else {
+            # Process stones not in cache
+            my @update = blink($stone);
+            $cacheRef->{$stone} = \@update;
+            push @updatedStones, @update;
+            foreach my $new_stone (@update) {
+                push @updatedLevels, $level + 1;
+            }
+        }
+    }
+    my $done = !grep { $_ != $maxLevel } @updatedLevels;
+    return (\@updatedStones, \@updatedLevels, $done);
+}
+
+print optimizedBlinks(25,"125 17")."\n";
+print optimizedBlinks(75,"2 77706 5847 9258441 0 741 883933 12")."\n";
