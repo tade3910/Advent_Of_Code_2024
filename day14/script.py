@@ -49,21 +49,44 @@ def getSafetyFactor(robotsInfo:list,height:int=7,width:int=11,seconds:int=100):
         safetyFactor *= count
     return safetyFactor
 
-def isUnique(robotsInfo:list,seconds:int,height:int=103,width:int=101):
-    curPositions = set()
-    for robot in robotsInfo:
-        x,y,dx,dy = robot
-        curPosition = getPosition(x,y,dx,dy,height,width,seconds)
-        if curPosition in curPositions:
-            return False
-        curPositions.add(curPosition)
-    return True
+def checkTouching(robotsInfo:list,height:int=103,width:int=101):
+    seconds = 0
+    nextToEachOther = 0
+    robotCount = len(robotsInfo)
 
-def checkTouching(robotsInfo:list):
-    seconds = 1
-    while not isUnique(robotsInfo,seconds): #I looked at the thread and it happens when they have unique positions
+    while nextToEachOther * 2 < robotCount:
+        nextToEachOther = 0
         seconds += 1
+        curPositions = set()
+        for robot in robotsInfo:
+            x,y,dx,dy = robot
+            curPosition = getPosition(x,y,dx,dy,height,width,seconds)
+            curPositions.add(curPosition)
+        
+        
+        #Bryan hinted if most are next to each other it'll be a tree
+        for position in curPositions:
+            for otherPosition in curPositions:
+                if position == otherPosition: # Can't consider the same robot
+                    continue
+                robotX,robotY = position
+                otherX,otherY = otherPosition
+                # check same X
+                if robotX == otherX:
+                    Ydif = abs(robotY - otherY)
+                    if Ydif <= 1: 
+                        nextToEachOther +=1
+                        break
+                #check same Y
+                if robotY == otherY:
+                    Xdif = abs(robotX - otherX)
+                    if Xdif <= 1: 
+                        nextToEachOther +=1
+                        break
+        print(f"nextToEachOther is {nextToEachOther} and seconds is {seconds}")
     return seconds
+
+                
 
 def parseInput(fileName:str):
     with open(fileName, 'r') as file:
