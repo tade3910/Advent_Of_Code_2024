@@ -3,7 +3,7 @@ import heapq
 WALL = '#'
 START = 'S'
 END = 'E'
-
+import time
 def getOpositeDirection(direction:str):
      if direction == 'E':
           return 'W'
@@ -90,6 +90,7 @@ def getShortest(distances:dict[tuple[int, int, str], int],endLocation:tuple[int,
     return distances[possibleEnds[shortestEnd]],possibleEnds[shortestEnd]
 
 def parseInput(fileName:str):
+    startTime = time.time() 
     with open(fileName, 'r') as file:
         world:list[list[str]] = []
         endLocation = (0,0)
@@ -109,6 +110,9 @@ def parseInput(fileName:str):
         startEntry = (startLocation[0],startLocation[1],'E')
         count = countTiles(prevs,endEntry,startEntry)
         print(f"distance is {distance} and count is {count}")
+        endTime = time.time()
+        runTime = endTime - startTime
+        print(f"completed in {runTime:.4f} seconds")
 
 def main():
     parseInput('test.txt')
