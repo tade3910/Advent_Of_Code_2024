@@ -1,9 +1,10 @@
-
+import time
 def parse(fileName:str):
     with open(fileName, 'r') as file:
         patternEnd = False
         toSearch = []
         made = {}
+        options:dict[str,list] = {}
         towels:set[str] = set()
         for line in file:
             curLine = line.strip()
@@ -16,6 +17,10 @@ def parse(fileName:str):
                 for option in curLine:
                     towels.add(option)
                     made[option] = True
+                    key = option[0]
+                    value = options.get(key,[])
+                    value.append(option)
+                    options[key] = value
         return toSearch,towels,made
 
 def canMake(toSearch: str,towels: set[str], made: dict[str,bool] ) -> bool:
@@ -26,20 +31,10 @@ def canMake(toSearch: str,towels: set[str], made: dict[str,bool] ) -> bool:
     for searchTo in range(0,len(toSearch)):
         curr = toSearch[0:searchTo + 1]
         if curr in towels and canMake(toSearch[searchTo + 1:],towels,made):
+            made[toSearch] = True
             return True
     
     made[toSearch] = False
-    return False
-
-def failure(toSearch: str, made: set[str], options: dict[str, list[str]]) -> bool:
-    if toSearch in made:
-        return True
-    for option in options.get(toSearch[0], []):  # Match first character
-        optionLen = len(option)
-        if toSearch[:optionLen] == option:  # Check if option matches start of toSearch
-            if failure(toSearch[optionLen:], made, options):  # Recur for remaining
-                made.add(toSearch)  # Mark as buildable
-                return True
     return False
 
 def numMakes(toSearch: str,towels: set[str], made: dict[str,int] ) -> bool:
@@ -72,9 +67,27 @@ def countNumMade(fileName:str):
         count += numMakes(search,towels,made)
     return count
 
+startTime = time.time() 
 print(countMade("test.txt"))
-print(countMade("input.txt"))
-print(countNumMade("test.txt"))
-print(countNumMade("input.txt"))
+endTime = time.time()
+runTime = endTime - startTime
+print(f"completed in {runTime * 1000:.4f} ms")
 
+startTime = time.time() 
+print(countMade("input.txt"))
+endTime = time.time()
+runTime = endTime - startTime
+print(f"completed in {runTime * 1000:.4f} ms")
+
+startTime = time.time() 
+print(countNumMade("test.txt"))
+endTime = time.time()
+runTime = endTime - startTime
+print(f"completed in {runTime * 1000:.4f} ms")
+
+startTime = time.time() 
+print(countNumMade("input.txt"))
+endTime = time.time()
+runTime = endTime - startTime
+print(f"completed in {runTime * 1000:.4f} ms")
     
