@@ -29,7 +29,6 @@ def dfs(track:list[list[str]],start:tuple[int,int],end:tuple[int,int]):
     return path
 
 def getCheats(path:list[str],maxCheats:int,threshold:int):
-    raceTime = len(path) - 1
     count = 0
     for i in range(len(path)-1): # try going from one point in the path to another
         for j in range(i+1, len(path)):
@@ -37,8 +36,9 @@ def getCheats(path:list[str],maxCheats:int,threshold:int):
             distance = abs(posA[0] - posB[0]) + abs(posA[1] - posB[1])
             if distance > maxCheats: # can't go that far
                 continue
-            cheatTime = (i + 1) + distance + (raceTime - j - 1)
-            timeSaved = raceTime - cheatTime
+            # distance is how many steps we need to take to get to this point
+            # timeSaved will be the difference in times - time it takes to get to point
+            timeSaved = j - i - distance
             if timeSaved < threshold:
                 continue
             count += 1
