@@ -80,8 +80,13 @@ func get_fancy_password(file_name string) int {
 		// Count how many times we pass 0
 		for range magnitude { // Was trying to be too smart just brute force
 			cur += multiplier
-			cur = (cur + 100) % 100 // wrap around
-
+			//wrap around logic
+			switch cur {
+			case -1:
+				cur = 99
+			case 100:
+				cur = 0
+			}
 			if cur == 0 {
 				password++
 			}
