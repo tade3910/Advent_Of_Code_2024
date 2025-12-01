@@ -33,10 +33,25 @@ sub printList {
     print "\n";
 }
 
+sub lastAttempt {
+    my($rows,$cols,$regionRef,$start) = @_;
+    my $lines = 0;
+    my %explored;
+    my @stack = ([$start->[0],$start->[1]]); # start row col
+    while(@stack) {
+        my ($row, $col) = @{pop @stack};
+        my $hash = "$row,$col";
+        next unless !exists $explored{$hash};
+        
+
+    }
+    #Go as far right
+    
+}
+
+
 sub getLines { #Some logic error
     my($rows,$cols,$regionRef) = @_;
-    my $entries = scalar %{$regionRef};
-    # print_hash($regionRef);
     my $lines = 0;
     my @prev;
     my $topRow = 0;
@@ -48,16 +63,9 @@ sub getLines { #Some logic error
         @prev = ();
         for my $col(0..$cols - 1) {
             my $hashEntry = "$topRow,$col";
-            # print "hash entry is $hashEntry and col is $col and prev is \n";
-            # printList(\@prev);
             if(exists $regionRef->{$hashEntry}) {
                 push @prev,1;
-                # if($count == 0) {
-                #     # print "found first element\n";
-                #     $lines = 4;
                 if($count == 0 or !$prev[$col - 1]) {
-                    # print "Adding lines\n";
-                    #mid left
                     $lines +=3;
                 }
                 $count++;
@@ -68,46 +76,49 @@ sub getLines { #Some logic error
         }
         $topRow++;
        }
-    # print "count is $count and entries are $entries\n";
-    # return $lines if $count == $entries;
-    # print "lines are $lines and count is $count and topRow is $topRow\n";
     for my $row($topRow..$rows - 1) {
+        print "lines are $lines\n";
         printList(\@prev);
         if($count == scalar %{$regionRef}) {
             last;
         }
         my @nextPrev;
         for my $col(0..$cols - 1) {
-            my $hashEntry = "$topRow,$col";
-            # print "Checking $hashEntry\n";
+            my $hashEntry = "$row,$col";
+            print "Checking entry $hashEntry of col $col\n";
             if(exists $regionRef->{$hashEntry}) {
-                # print "New entry found\n";
                 push @nextPrev,1;
                 $count++;
                 my $addedLines = 2;
                 if ($prev[$col]) {
-                    # print "Top exists\n";
-                    #top exists
+                    if($col == 0) {
+                        print "First col top exists add nothing\n";
+                        next;
+                    }
+                    print "top exists\n";
                     $addedLines--;
+                } elsif($col ==$cols -1) {
+                    print "No top at most right added line\n";
+                    $lines++;
                 }
                 if($col != 0 and $nextPrev[$col -1]) {
-                    #left exists
-                    # print "Left exists\n";
+                    print "left exists\n";
                     $addedLines--;
                 }
                 $lines += $addedLines;
-                # question is does bottom exist
             } else {
                 push @nextPrev,0;
                 if($prev[$col]) {
-                    #bottom doesn't exist for prev
-                    # print "Col $col at prev was lone so line added\n";
+                    if($col == 0 or !$prev[$col -1]) {
+                        print "adding bottom line\n";
+                        $lines++;
+                    }
+                } elsif ($nextPrev[$col-1] and !$prev[$col-1]) {
+                    print "adding right edge to prev\n";
                     $lines++;
                 }
             }
         }
-        # print "lines are $lines\n";
-        
         @prev = @nextPrev;
     }
 
@@ -119,8 +130,6 @@ sub getLines { #Some logic error
                 $lines++;
             }
         }
-        # print "lines are $lines\n";
-
     }
     return $lines;
 }
@@ -185,7 +194,6 @@ sub explore {
 
         foreach my $neighbor (getNeighbors($row, $col, $cols, $rows)) {
             my ($nRow, $nCol, $direction) = @$neighbor;
-            print "direction is $direction\n";
             if (!inWorld($nCol, $nRow, $cols, $rows) || $worldRef->[$nRow][$nCol] ne $type) {
                 $perimeter++;  # Either a world boundary or next to some other region
             } else {
@@ -292,14 +300,14 @@ sub getWorld {
     return @world;
 }
 # getWorld("test.txt");
-my @test = getWorld("test.txt");
-print(getPrice(\@test)."\n");
+# my @test = getWorld("test.txt");
+# print(getPrice(\@test)."\n");
 # my @secondTest = getWorld("test2.txt");
 # print(getPrice(\@secondTest)."\n");
 # my @fourthTest = getWorld("test4.txt");
 # print(getPrice(\@fourthTest)."\n");
-# my @thirdTest = getWorld("test3.txt");
-# print(getPrice(\@thirdTest)."\n");
+my @thirdTest = getWorld("test3.txt");
+print(getPrice(\@thirdTest)."\n");
 # my @input = getWorld("input.txt");
 # print(getPrice(\@input)."\n");
 

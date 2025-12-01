@@ -1,5 +1,5 @@
 from collections import deque
-
+import time
 def inWorld(row:int,col:int,boundary:int):
     return row >= 0 and col >= 0 and row <= boundary and col <= boundary
 
@@ -81,10 +81,29 @@ def getShortestPath(fileName:str,boundary:int,simulate:int):
     return distance
 
 def main():
+    startTime = time.time() 
     print(getShortestPath("test.txt",6,12))
+    endTime = time.time()
+    runTime = endTime - startTime
+    print(f"completed in {runTime * 1000:.4f} ms")
+
+    startTime = time.time() 
     print(getShortestPath("input.txt",70,1024))
+    endTime = time.time()
+    runTime = endTime - startTime
+    print(f"completed in {runTime * 1000:.4f} ms")
+
+    startTime = time.time() 
     print(getFirstCorrupted("test.txt",6))
+    endTime = time.time()
+    runTime = endTime - startTime
+    print(f"completed in {runTime * 1000:.4f} ms")
+    
+    startTime = time.time() 
     print(getFirstCorrupted("input.txt",70))
+    endTime = time.time()
+    runTime = endTime - startTime
+    print(f"completed in {runTime * 1000:.4f} ms")
 
 if __name__ == "__main__":
     main()
