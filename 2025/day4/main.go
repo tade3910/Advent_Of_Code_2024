@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func update_left_right(count_floor [][]int, row, col int) {
+func count_left_right(count_floor [][]int, row, col int) {
 	//left
 	if col > 0 {
 		count_floor[row][col-1]++
@@ -18,19 +18,19 @@ func update_left_right(count_floor [][]int, row, col int) {
 	}
 }
 
-func update_visualization(count_floor [][]int, row, col int) {
+func count_adjacents(count_floor [][]int, row, col int) {
 	top_row, bottom_row := row-1, row+1
 	//Update up
 	if top_row >= 0 {
 		count_floor[top_row][col]++
-		update_left_right(count_floor, top_row, col)
+		count_left_right(count_floor, top_row, col)
 	}
 	//update lr
-	update_left_right(count_floor, row, col)
+	count_left_right(count_floor, row, col)
 	//update bottom
 	if bottom_row < len(count_floor) {
 		count_floor[bottom_row][col]++
-		update_left_right(count_floor, bottom_row, col)
+		count_left_right(count_floor, bottom_row, col)
 	}
 }
 
@@ -52,7 +52,7 @@ func num_accesible(floor_map []string) (int, []string) {
 			if col != tp {
 				continue
 			}
-			update_visualization(count_floor, row_index, col_index)
+			count_adjacents(count_floor, row_index, col_index)
 		}
 	}
 	accessible := 0
