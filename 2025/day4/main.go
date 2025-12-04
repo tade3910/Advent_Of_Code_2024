@@ -34,6 +34,13 @@ func count_adjacents(count_floor [][]int, row, col int) {
 	}
 }
 
+func pretty_print(slice []string) {
+	for _, cur := range slice {
+		fmt.Printf("%s\n", cur)
+	}
+	fmt.Println()
+}
+
 func num_accesible(floor_map []string) (int, []string) {
 	const tp = '@'
 	const none = '.'
@@ -107,10 +114,11 @@ func part_2(file_name string) {
 	}
 	total_accssible := 0
 	accessible, next_world := num_accesible(floor_map)
+	pretty_print(next_world)
 	for accessible != 0 {
 		total_accssible += accessible
-		// fmt.Printf("Num accessible is %d\n", accessible)
 		accessible, next_world = num_accesible(next_world)
+		pretty_print(next_world)
 	}
 	fmt.Printf("Total accessible is %d\n", total_accssible)
 
