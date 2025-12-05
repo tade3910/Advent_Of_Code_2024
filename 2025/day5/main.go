@@ -14,10 +14,6 @@ type idRange struct {
 	Min int
 }
 
-func inRange(start, end int, curRuange *idRange) bool {
-	return start >= curRuange.Min && end <= curRuange.Min
-}
-
 func getInt(v string) int {
 	if v == "" {
 		return 0
@@ -138,12 +134,17 @@ func main() {
 	part2("input.txt")
 }
 
-/**
-3-5
-10-14 -> 3 < 10 but 5 < 10,
-16-20
-12-18
+/*
+//After coding I realized I am stupid
+//My solution is O(n^2) could be O(nlgn)
 
-3 -5
-
+Step 1:
+Get all ranges -> O(n)
+Sort ranges by start time -> O(nlgn)
+Iterate through array growing ranges until you get to a range that can't be joined in current range
+If we're at a spot that the min of cur > max grown array i.e
+1-5 -> 1-10
+2-10 -> Not added
+11- 25 -> 11-25
+We only need to pass through once and only insert when at the end or next element is bigger
 */
